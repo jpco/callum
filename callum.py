@@ -81,7 +81,7 @@ def clear_cal(service, calId):
         try:
             service.events().delete(calendarId=calId, eventId=evt['id']).execute()
         except HttpError:
-            return
+            continue
 
 
 def main():
@@ -99,14 +99,17 @@ def main():
     for cal in calm_list:
         evts = get_evts(service, cal['id'])
         for evt in evts:
-            n_evt = {
-                'start': evt['start'],
-                'end': evt['end'],
-                'summary': evt['summary']
-            }
-            if 'recurrence' in evt:
-                n_evt['recurrence'] = evt['recurrence']
-            service.events().insert(calendarId=merge_cal['id'], body=n_evt).execute()
+            if evt['status'] == 'cancelled':
+                continue
+            elif evt['status'] == 'confirmed':
+                n_evt = {
+                    'start': evt['start'],
+                    'end': evt['end'],
+                    'summary': evt['summary']
+                }
+                if 'recurrence' in evt:
+                    n_evt['recurrence'] = evt['recurrence']
+                service.events().insert(calendarId=merge_cal['id'], body=n_evt).execute()
 
 # watch loop
 
